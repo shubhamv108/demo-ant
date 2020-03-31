@@ -1,0 +1,74 @@
+<?xml version="1.0"?>
+<project name="Ant-Demo" basedir="." default="main">
+    <!-- Sets variables which can later be used. -->
+    <!-- The value of a property is accessed via ${} -->
+    <property name="src.dir"     location="src" />
+    <property name="build.dir"   location="bin" />
+    <property name="classes.dir" location="${build.dir}/classes"/>
+    <property name="lib.dir"     location="lib" />
+    <property name="dist.dir"    location="dist" />
+    <property name="docs.dir"    location="docs" />
+
+    <!-- Deletes the existing build, docs and dist directory-->
+    <target name="clean" description="clean up build files">
+        <delete dir="${build.dir}" />
+        <delete dir="${docs.dir}" />
+        <delete dir="${dist.dir}" />
+    </target>
+
+    <!-- Creates the  build, docs and dist directory-->
+    <target name="makedir" description="create directories">
+        <mkdir dir="${build.dir}" />
+        <mkdir dir="${classes.dir}" />
+        <mkdir dir="${docs.dir}" />
+        <mkdir dir="${dist.dir}" />
+    </target>
+
+    <!--
+Create a classpath container which can be later used in the ant task
+-->
+    <path id="build.classpath">
+        <fileset dir="${lib.dir}">
+            <include name="**/*.jar" />
+        </fileset>
+    </path>
+
+    <!-- Compiles the java code (including the usage of library for JUnit -->
+    <target name="compile" depends="clean, makedir" description="compile project">
+        <javac srcdir="${src.dir}" destdir="${classes.dir}" includeantruntime="false">
+        </javac>
+
+    </target>
+
+    <!-- Creates Javadoc -->
+    <target name="doc" depends="compile" description="generate documentation">
+        <javadoc packagenames="src" sourcepath="${src.dir}" destdir="${docs.dir}">
+            <!-- Define which files / directory should get included, we include all -->
+            <fileset dir="${src.dir}">
+                <include name="**" />
+            </fileset>
+        </javadoc>
+    </target>
+
+    <!--Creates the deployable jar file  -->
+    <target name="jar" depends="compile" description="generate the distribution jar">
+        <jar destfile="${dist.dir}/${ant.project.name}.jar" basedir="${classes.dir}">
+            <manifest>
+                <attribute name="Main-Class" value="com.demo.ant.Main" />
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="run" depends="jar" description="run application">
+        <java jar="${dist.dir}/${ant.project.name}.jar" fork="true"/>
+    </target>
+
+    <target name="build" depends="jar" description="build application"/>
+
+    <target name="main" depends="compile, jar, doc">
+        <description>Main target</description>
+    </target>
+
+    <target name="rebuild" depends="clean,build" description="rebuild application"/>
+
+</project>
